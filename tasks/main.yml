@@ -50,6 +50,7 @@
     group="root"
     mode="0755"
     state="link"
+    force="yes"
   with_items: "{{ found.files }}"
   when: php_symlink_scl_bins
 
@@ -61,6 +62,7 @@
     group="root"
     mode="0644"
     state="link"
+    force="yes"
   when: php_single_version == true
 
 - name: Tweak PHP.ini Vars
