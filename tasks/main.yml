@@ -51,7 +51,7 @@
     mode="0755"
     state="link"
   with_items: "{{ found.files }}"
-  when: php_symlink_scl_bins
+  when: php_symlink_scl_bins == true
 
 - name: Symlink PHP.ini
   file:
