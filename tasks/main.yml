@@ -56,11 +56,6 @@
     - php_symlink_scl_bins
     - item.isreg
 
-- name: Stat PHP.ini
-  stat:
-    path="/etc/php.ini"
-  register: phpini
-
 - name: Symlink PHP.ini
   file:
     src="{{ php_config_root }}/php.ini"
@@ -69,10 +64,8 @@
     group="root"
     mode="0644"
     state="link"
-    force="{{ phpini.stat.isreg }}"
-  when: 
-    - php_single_version 
-    - phpini.stat.isreg
+    force=true
+  when: php_single_version
 
 - name: Tweak PHP.ini Vars
   ini_file:
