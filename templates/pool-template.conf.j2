@@ -11,7 +11,9 @@ pm.process_idle_timeout = {{ item.config.process_idle_timeout | default("60s") }
 request_terminate_timeout = 0
 request_slowlog_timeout = 0
 php_admin_value[error_log] = {{ item.config.error_log }}
-php_admin_value[include_path] = {{ item.config.include_path | default('.') }}
+{% if item.config.include_path is defined %}
+php_admin_value[include_path] = {{ item.config.include_path }}
+{% endif %}
 slowlog = {{ item.config.slow_log }}
 pm.status_path = /php_status
 rlimit_core = unlimited
