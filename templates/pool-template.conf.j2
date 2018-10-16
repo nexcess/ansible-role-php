@@ -14,6 +14,11 @@ php_admin_value[error_log] = {{ item.config.error_log }}
 {% if item.config.include_path is defined %}
 php_admin_value[include_path] = {{ item.config.include_path }}
 {% endif %}
+{% if item.config.env is defined %}
+{% for param, value in item.config.env.iteritems() %}
+env[{{param}}] = {{ value }}
+{% endfor %}
+{% endif %}
 slowlog = {{ item.config.slow_log }}
 pm.status_path = /php_status
 rlimit_core = unlimited
