@@ -27,6 +27,12 @@
     state="{{ php_package_state }}"
   with_items: "{{ php_pecl_modules + php_extra_pecl_modules }}"
 
+- name: Install {{ php_prefix }} Specific Packages
+  yum:
+    name="{{ php_prefix }}-{{ item }}"
+    state="{{ php_package_state }}"
+  with_items: "{{ vars[php_prefix + '_specific_packages'] }}"
+
 - name: Install Browscap.INI
   template:
     src="browscap.ini.j2"
