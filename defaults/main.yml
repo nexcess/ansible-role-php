@@ -23,6 +23,7 @@ php_base_packages:
   - "php-common"
   - "php-bcmath"
   - "php-pspell"
+  - "php-snappy"
   - "php-process"
   - "php-mysqlnd"
   - "php-opcache"
