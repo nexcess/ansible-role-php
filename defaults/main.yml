@@ -54,6 +54,8 @@ php72_specific_packages:
   - "php-pecl-libsodium"
 php73_specific_packages:
   - "php-sodium"
+php74_specific_packages:
+  - "php-sodium"
 php_extra_pecl_modules: []
 php_extra_base_packages:   []
 php_package_state: "present"
