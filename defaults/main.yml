@@ -3,6 +3,9 @@
 # Base PHP Vars
 php_prefix: "php71"
 php_base_packages:
+  - "php-ast"
+  - "php-brotli"
+  - "php-pgsql"
   - "php-gd"
   - "php-xml"
   - "php-cli"
@@ -30,6 +33,7 @@ php_base_packages:
   - "php-enchant"
   - "php-mbstring"
   - "php-ioncube-loader"
+  - "php-sourceguardian-loader"
 php_pecl_modules:
   - "php-pecl-zip"
   - "php-pecl-ssh2"
@@ -55,7 +59,7 @@ php72_specific_packages:
 php73_specific_packages:
   - "php-sodium"
 php_extra_pecl_modules: []
-php_extra_base_packages:   []
+php_extra_base_packages: []
 php_package_state: "present"
 php_install_browscap_ini: true
 php_symlink_scl_bins: true
@@ -72,21 +76,41 @@ php_fpm_packages:
 php_fpm_pools: []
 php_fpm_port: 9000
 
+php_extension_conf_paths:
+  - "{{ php_config_root }}/php.d"
+
 # OpCache settings (useful for PHP >=5.5).
 php_opcache_zend_extension: "opcache.so"
 php_opcache_enable: 1
 php_opcache_enable_cli: 0
-php_opcache_memory_consumption: 96
-php_opcache_interned_strings_buffer: 16
-php_opcache_max_accelerated_files: 4096
+php_opcache_memory_consumption: 128
+php_opcache_interned_strings_buffer: 24
+php_opcache_max_accelerated_files: 16384
 php_opcache_max_wasted_percentage: 5
 php_opcache_validate_timestamps: 1
 php_opcache_revalidate_path: 0
-php_opcache_revalidate_freq: 2
+php_opcache_revalidate_freq: 5
 php_opcache_max_file_size: 0
 php_opcache_blacklist_filename: ""
-php_opcache_huge_code_pages: 1
-
+php_opcache_huge_code_pages: 0
 php_opcache_conf_filename: "10-opcache.ini"
-php_extension_conf_paths:
-  - "{{ php_config_root }}/php.d"
+
+php_ini_override: false
+php_ini_override_filename: "01-php-override.ini"
+php_ini_override_options: |
+  expose_php=Off
+  memory_limit=2048M
+  upload_max_filesize=1536M
+  max_file_uploads=1024
+  post_max_size=1536M
+  max_execution_time=600
+  max_input_time=-1
+  max_input_vars=16384
+  realpath_cache_size=4096k
+  realpath_cache_ttl=300
+  output_buffering=4096
+  allow_url_fopen=On
+  allow_url_include=Off
+  error_reporting=E_ALL & ~E_DEPRECATED & ~E_STRICT
+  display_errors=Off
+  display_startup_errors=Off  
