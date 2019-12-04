@@ -29,7 +29,6 @@ php_base_packages:
   - "php-opcache"
   - "php-enchant"
   - "php-mbstring"
-  - "php-ioncube-loader"
 php_pecl_modules:
   - "php-pecl-zip"
   - "php-pecl-ssh2"
@@ -43,17 +42,24 @@ php_pecl_modules:
 php56_specific_packages:
   - "php-mcrypt"
   - "php-pecl-libsodium"
+  - "php-ioncube-loader"
 php70_specific_packages:
   - "php-mcrypt"
   - "php-pecl-libsodium"
+  - "php-ioncube-loader"
 php71_specific_packages:
   - "php-mcrypt"
   - "php-pecl-libsodium"
+  - "php-ioncube-loader"
 php72_specific_packages:
   - "php-mcrypt"
   - "php-pecl-libsodium"
+  - "php-ioncube-loader"
 php73_specific_packages:
   - "php-sodium"
+  - "php-ioncube-loader"
+php74_specific_packages:
+  - "php-sodium" 
 php_extra_pecl_modules: []
 php_extra_base_packages:   []
 php_package_state: "present"
