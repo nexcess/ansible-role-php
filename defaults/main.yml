@@ -59,6 +59,8 @@ php73_specific_packages:
   - "php-sodium"
   - "php-ioncube-loader"
 php74_specific_packages:
+  - "php-sodium"
+php80_specific_packages:
   - "php-sodium" 
 php_extra_pecl_modules: []
 php_extra_base_packages:   []
