@@ -66,12 +66,12 @@ php_extra_pecl_modules: []
 php_extra_base_packages:   []
 php_package_state: "present"
 php_install_browscap_ini: true
-php_symlink_scl_bins: true
+php_symlink_scl_bins: false
 php_remi_root: "/opt/remi"
 php_root: "{{ php_remi_root }}/{{ php_prefix }}/root"
 php_config_root: "/etc/opt/remi/{{ php_prefix }}"
 php_ini_config: []
-php_single_version: true
+php_single_version: false
 
 # PHP-FPM Vars
 php_fpm_enabled: false
