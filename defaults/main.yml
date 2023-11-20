@@ -61,7 +61,13 @@ php73_specific_packages:
 php74_specific_packages:
   - "php-sodium"
 php80_specific_packages:
-  - "php-sodium" 
+  - "php-sodium"
+php81_specific_packages:
+  - "php-sodium"
+php82_specific_packages:
+  - "php-sodium"
+php83_specific_packages:
+  - "php-sodium"
 php_extra_pecl_modules: []
 php_extra_base_packages:   []
 php_package_state: "present"
