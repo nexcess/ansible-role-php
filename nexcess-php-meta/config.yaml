@@ -1,7 +1,13 @@
----
-
-# Base PHP Vars
-php_prefix: "php71"
+base_requirements:
+  - "remi-release"
+php_versions:
+  - "php56"
+  - "php70"
+  - "php71"
+  - "php72"
+  - "php73"
+  - "php74"
+  - "php80"
 php_base_packages:
   - "php-gd"
   - "php-xml"
@@ -61,41 +67,4 @@ php73_specific_packages:
 php74_specific_packages:
   - "php-sodium"
 php80_specific_packages:
-  - "php-sodium" 
-php_extra_pecl_modules: []
-php_extra_base_packages:   []
-use_meta_php_package: false
-php_package_state: "present"
-php_install_browscap_ini: true
-php_symlink_scl_bins: true
-php_remi_root: "/opt/remi"
-php_root: "{{ php_remi_root }}/{{ php_prefix }}/root"
-php_config_root: "/etc/opt/remi/{{ php_prefix }}"
-php_ini_config: []
-php_single_version: true
-
-# PHP-FPM Vars
-php_fpm_enabled: false
-php_fpm_packages:
-  - "php-fpm"
-php_fpm_pools: []
-php_fpm_port: 9000
-
-# OpCache settings (useful for PHP >=5.5).
-php_opcache_zend_extension: "opcache.so"
-php_opcache_enable: 1
-php_opcache_enable_cli: 0
-php_opcache_memory_consumption: 96
-php_opcache_interned_strings_buffer: 16
-php_opcache_max_accelerated_files: 4096
-php_opcache_max_wasted_percentage: 5
-php_opcache_validate_timestamps: 1
-php_opcache_revalidate_path: 0
-php_opcache_revalidate_freq: 2
-php_opcache_max_file_size: 0
-php_opcache_blacklist_filename: ""
-php_opcache_huge_code_pages: 1
-
-php_opcache_conf_filename: "10-opcache.ini"
-php_extension_conf_paths:
-  - "{{ php_config_root }}/php.d"
+  - "php-sodium"
