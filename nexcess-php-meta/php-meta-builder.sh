@@ -12,7 +12,20 @@ log_debug() { echo "[DEBUG] $*" >&2; }
 log_info()  { echo "[INFO]  $*"; }
 log_error() { echo "[ERROR] $*" >&2; }
 
-# Base config.
+# Detect the OS to read the config for exclusions, default to EL9.
+EL_VERSION="9"
+
+if [[ -f /etc/os-release ]]; then
+    source /etc/os-release
+
+    if [[ -n "${VERSION_ID:-}" ]]; then
+        # Take only the major version (e.g., "7.9" -> "7").
+        EL_VERSION="${VERSION_ID%%.*}"
+    fi
+fi
+log_info "Detected EL Version: ${EL_VERSION}"
+
+# Configuration.
 CONFIG_FILE="config.yaml"
 CHANGELOG_FILE="changelog.txt"
 SPEC_DIR="SPECS"
@@ -24,6 +37,7 @@ declare -a php_base_packages
 declare -a php_pecl_modules
 declare -a php_extra_base_packages
 declare -a php_extra_pecl_modules
+declare -a el_excluded_packages
 declare -a skip_versions
 SPEC_VERSION=""
 SPEC_RELEASE=""
@@ -53,15 +67,15 @@ parse_yaml_array() {
         if (( in_section )) && [[ $line =~ ^[[:space:]]*-[[:space:]]*(\"([^\"\\]*?)\"|([^[:space:]]*)) ]]; then
             local val=""
             if [[ ${BASH_REMATCH[2]} ]]; then
-                # Quoted value
+                # Quoted value.
                 val="${BASH_REMATCH[2]}"
             else
-                # Unquoted value
+                # Unquoted value.
                 val="${BASH_REMATCH[3]}"
             fi
             val=${val//$'\r'/} # Strip stray CR.
 
-            # If none empty value, add to the list of values.
+            # If non-empty value, add to the list of values.
             [[ -n $val ]] && values+=("$val")
         fi
     done < "$CONFIG_FILE"
@@ -71,7 +85,9 @@ parse_yaml_array() {
     declare -g -a "$dest"
 
     # The eval safely expands the array contents (quoting each element).
-    eval "$dest=( \"\${values[@]}\" )"
+    if (( ${#values[@]} > 0 )); then
+        eval "$dest=( \"\${values[@]}\" )"
+    fi
 }
 
 # Reads changelog to extract version and release, then parses
@@ -106,9 +122,13 @@ read_config() {
     parse_yaml_array "php_extra_base_packages" php_extra_base_packages
     parse_yaml_array "php_extra_pecl_modules"  php_extra_pecl_modules
 
+    # Load exclusions for the detected EL version (e.g., el7_exclude_packages).
+    parse_yaml_array "el${EL_VERSION}_exclude_packages" el_excluded_packages
+
     # Each version may have specific packages defined in the config,
     # try and find those.
-    for ver in "${php_versions[@]}"; do
+    # Use loop with default empty expansion to prevent crash if php_versions is empty.
+    for ver in "${php_versions[@]:-}"; do
         # Ensure the version is not empty.
         [[ -n $ver ]] || continue
         local key="${ver}_specific_packages"
@@ -131,31 +151,67 @@ build_requires() {
     local -a reqs=()
 
     # Add base requirements first to satisfy system-level dependencies.
-    for pkg in "${base_requirements[@]}"; do
+    for pkg in "${base_requirements[@]:-}"; do
+        [[ -n "$pkg" ]] || continue
+
+        # Skip if package is excluded.
+        if [[ " ${el_excluded_packages[*]:-} " == *" $pkg "* ]]; then
+            log_debug "Skipping $pkg (Excluded on EL${EL_VERSION})"
+            continue
+        fi
+
         reqs+=("$pkg")
     done
 
     # Add php base packages.
-    for pkg in "${php_base_packages[@]}" "${php_extra_base_packages[@]}"; do
+    for pkg in "${php_base_packages[@]:-}" "${php_extra_base_packages[@]:-}"; do
+        [[ -n "$pkg" ]] || continue
+
+        # Skip if package is excluded.
+        if [[ " ${el_excluded_packages[*]:-} " == *" $pkg "* ]]; then
+            log_debug "Skipping $pkg (Excluded on EL${EL_VERSION})"
+            continue
+        fi
+
         reqs+=("${prefix}${pkg}")
     done
 
     # Add php PECL modules.
-    for pkg in "${php_pecl_modules[@]}" "${php_extra_pecl_modules[@]}"; do
+    for pkg in "${php_pecl_modules[@]:-}" "${php_extra_pecl_modules[@]:-}"; do
+        [[ -n "$pkg" ]] || continue
+
+        # Skip if package is excluded.
+        if [[ " ${el_excluded_packages[*]:-} " == *" $pkg "* ]]; then
+            log_debug "Skipping $pkg (Excluded on EL${EL_VERSION})"
+            continue
+        fi
+
         reqs+=("${prefix}${pkg}")
     done
 
     # Add version-specific packages.
     local specific_key="${ver}_specific_packages"
     if declare -p "$specific_key" &>/dev/null; then
-        local -n specific_arr="$specific_key"
-        for pkg in "${specific_arr[@]}"; do
+        # 'local -n' is Bash 4.3+. We use eval to copy the array content safely in Bash 4.2.
+        local -a specific_arr
+        eval "specific_arr=( \"\${$specific_key[@]}\" )"
+
+        for pkg in "${specific_arr[@]:-}"; do
+            [[ -n "$pkg" ]] || continue
+
+            # Skip if package is excluded.
+            if [[ " ${el_excluded_packages[*]:-} " == *" $pkg "* ]]; then
+                log_debug "Skipping $pkg (Excluded on EL${EL_VERSION})"
+                continue
+            fi
+
             reqs+=("${prefix}${pkg}")
         done
     fi
 
     local IFS=,
-    echo "${reqs[*]}"
+    # Use :- to handle case where reqs array is empty
+    echo "${reqs[*]:-}"
 }
 
 # Removes all content from the spec directory to prepare for new generation.
@@ -171,12 +227,13 @@ make_specs() {
     read_config
     clean
     log_info "Generating spec files in $SPEC_DIR"
-    for ver in "${php_versions[@]}"; do
+    for ver in "${php_versions[@]:-}"; do
         # Ignore any empty versions.
         [[ -n $ver ]] || continue
 
         # Skip versions supplied via -s/--skip.
-        if [[ " ${skip_versions[*]} " == *" $ver "* ]]; then
+        # Use :- to handle empty skip_versions array
+        if [[ " ${skip_versions[*]:-} " == *" $ver "* ]]; then
             log_debug "Skipping spec for $ver (requested by --skip)."
             continue
         fi
@@ -222,7 +279,8 @@ build() {
         ver=${spec_name##*-}
 
         # If the version is in the skip list, log and continue to the next file.
-        if [[ " ${skip_versions[*]} " == *" $ver "* ]]; then
+        # Use :- to handle empty skip_versions array
+        if [[ " ${skip_versions[*]:-} " == *" $ver "* ]]; then
             log_debug "Skipping build for $ver (requested by --skip)."
             continue
         fi
@@ -242,7 +300,8 @@ print_help() {
     fi
     local example_list
     if (( ${#help_versions[@]} )); then
-        example_list=$(IFS=,; echo "${help_versions[*]}")
+        # Use :- to handle empty array safely
+        example_list=$(IFS=,; echo "${help_versions[*]:-}")
     else
         example_list="php56,php70"
     fi

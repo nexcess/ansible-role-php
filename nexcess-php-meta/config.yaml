@@ -137,3 +137,6 @@ php84_specific_packages:
   - "php-pecl-igbinary"
   - "php-pecl-geoip"
   - "php-pecl-redis5"
+
+el7_exclude_packages:
+  - "php-sourceguardian-loader"
