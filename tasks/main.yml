@@ -14,24 +14,34 @@
   yum:
     name="{{ php_prefix }}"
     state="{{ php_package_state }}"
+  when: not use_meta_php_package
 
 - name: Install PHP
   yum:
     name="{{ php_prefix }}-{{ item }}"
     state="{{ php_package_state }}"
   with_items: "{{ php_base_packages + php_extra_base_packages }}"
+  when: not use_meta_php_package
 
 - name: Install PECL Mods
   yum:
     name="{{ php_prefix }}-{{ item }}"
     state="{{ php_package_state }}"
   with_items: "{{ php_pecl_modules + php_extra_pecl_modules }}"
+  when: not use_meta_php_package
 
 - name: Install {{ php_prefix }} Specific Packages
   yum:
     name="{{ php_prefix }}-{{ item }}"
     state="{{ php_package_state }}"
   with_items: "{{ vars[php_prefix + '_specific_packages'] }}"
+  when: not use_meta_php_package
+
+- name: Install nexcess-php-meta-{{ php_prefix }}
+  yum:
+    name="nexcess-php-meta-{{ php_prefix }}"
+    state="{{ php_package_state }}"
+  when: use_meta_php_package
 
 - name: Install Browscap.INI
   template:

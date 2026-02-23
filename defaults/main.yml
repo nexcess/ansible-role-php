@@ -64,6 +64,7 @@ php80_specific_packages:
   - "php-sodium" 
 php_extra_pecl_modules: []
 php_extra_base_packages:   []
+use_meta_php_package: false
 php_package_state: "present"
 php_install_browscap_ini: true
 php_symlink_scl_bins: true
