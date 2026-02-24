@@ -141,6 +141,18 @@ read_config() {
             log_debug "Skipping invalid identifier '$key'"
         fi
     done
+
+    # Each version may have specific package excludes defined in the config.
+    for ver in "${php_versions[@]:-}"; do
+        [[ -n $ver ]] || continue
+        local key="${ver}_exclude_packages"
+        if [[ $key =~ ^[a-zA-Z_][a-zA-Z0-9_]*$ ]]; then
+            declare -g -a "$key"
+            parse_yaml_array "$key" "$key"
+        else
+            log_debug "Skipping invalid identifier '$key'"
+        fi
+    done
 }
 
 # Constructs the complete list of package requirements for a PHP version
@@ -150,6 +162,13 @@ build_requires() {
     local prefix="${ver}-"
     local -a reqs=()
 
+    # Load version-specific excludes if defined.
+    local ver_exclude_key="${ver}_exclude_packages"
+    local -a ver_excluded=()
+    if declare -p "$ver_exclude_key" &>/dev/null; then
+        eval "ver_excluded=( \"\${$ver_exclude_key[@]:-}\" )"
+    fi
+
     # Add base requirements first to satisfy system-level dependencies.
     for pkg in "${base_requirements[@]:-}"; do
         [[ -n "$pkg" ]] || continue
@@ -157,6 +176,12 @@ build_requires() {
         # Skip if package is excluded.
         if [[ " ${el_excluded_packages[*]:-} " == *" $pkg "* ]]; then
             log_debug "Skipping $pkg (Excluded on EL${EL_VERSION})"
+            continue
+        fi
+
+        # Skip if package is excluded for this version.
+        if [[ " ${ver_excluded[*]:-} " == *" $pkg "* ]]; then
+            log_debug "Skipping $pkg (Excluded for $ver)"
             continue
         fi
 
@@ -173,6 +198,12 @@ build_requires() {
             continue
         fi
 
+        # Skip if package is excluded for this version.
+        if [[ " ${ver_excluded[*]:-} " == *" $pkg "* ]]; then
+            log_debug "Skipping $pkg (Excluded for $ver)"
+            continue
+        fi
+
         reqs+=("${prefix}${pkg}")
     done
 
@@ -186,6 +217,12 @@ build_requires() {
             continue
         fi
 
+        # Skip if package is excluded for this version.
+        if [[ " ${ver_excluded[*]:-} " == *" $pkg "* ]]; then
+            log_debug "Skipping $pkg (Excluded for $ver)"
+            continue
+        fi
+
         reqs+=("${prefix}${pkg}")
     done
 
@@ -194,7 +231,7 @@ build_requires() {
     if declare -p "$specific_key" &>/dev/null; then
         # 'local -n' is Bash 4.3+. We use eval to copy the array content safely in Bash 4.2.
         local -a specific_arr
-        eval "specific_arr=( \"\${$specific_key[@]}\" )"
+        eval "specific_arr=( \"\${$specific_key[@]:-}\" )"
 
         for pkg in "${specific_arr[@]:-}"; do
             [[ -n "$pkg" ]] || continue
@@ -331,7 +368,8 @@ fi
 while (( $# > 0 )); do
     case "$1" in
         -h|help|--help)
-            print_help "$@"
+            print_help
+            exit 0
         ;;
 
         # Add PHP version(s) to the skip list.
@@ -366,13 +404,15 @@ while (( $# > 0 )); do
         -*)
             echo "Unknown option '$1'"
             echo
-            print_help "$@"
+            print_help
+            exit 1
         ;;
 
         *)
             echo "Unknown command '$1'"
             echo
-            print_help "$@"
+            print_help
+            exit 1
         ;;
     esac
 done
