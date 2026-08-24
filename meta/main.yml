@@ -8,8 +8,8 @@ galaxy_info:
   platforms:
     - name: "EL"
       versions:
-        - "6"
         - "7"
+        - "9"
 dependencies:
   - name: "nexcess.repo-remi"
     src: "https://github.com/nexcess/ansible-role-repo-remi.git"
