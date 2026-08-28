@@ -15,7 +15,7 @@ php_admin_value[error_log] = {{ item.config.error_log }}
 php_admin_value[include_path] = {{ item.config.include_path }}
 {% endif %}
 {% if item.config.env is defined %}
-{% for param, value in item.config.env.iteritems() %}
+{% for param, value in item.config.env.items() %}
 env[{{param}}] = {{ value }}
 {% endfor %}
 {% endif %}
