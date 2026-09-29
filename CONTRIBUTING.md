@@ -33,3 +33,9 @@ Changes go to [nexcess/ansible-role-php](https://github.com/nexcess/ansible-role
 - [ ] Package changes applied to both `defaults/main.yml` and `nexcess-php-meta/config.yaml`,
       or the PR says why only one applies
 - [ ] Docs (`README.md`/`AGENTS.md`) updated if this changes how the role is used or built
+
+## Spec-driven development
+
+This repo uses [OpenSpec](https://github.com/Fission-AI/OpenSpec) for spec-driven
+development. PRs need an OpenSpec change under `openspec/changes/`, or an
+`sdd-exception: <reason>` line in the PR description.

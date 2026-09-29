@@ -132,6 +132,12 @@ Building the meta packages is a separate workflow — see
   only in the meta packages: `nexcess-php-meta/config.yaml` defines EL-level package exclusions
   for EL7 and none for EL9.
 
+## Spec-driven development
+
+This repo uses [OpenSpec](https://github.com/Fission-AI/OpenSpec) for spec-driven
+development. PRs need an OpenSpec change under `openspec/changes/`, or an
+`sdd-exception: <reason>` line in the PR description.
+
 ## See also
 
 - [README.md](README.md) — install, usage, and example playbooks
