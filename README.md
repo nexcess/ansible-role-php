@@ -111,6 +111,12 @@ This path is also the only way to install anything outside `php56`, `php70`–`p
 `php80`. The individual-package lists in `defaults/main.yml` stop there, while the builder
 covers `php54u` through `php85`.
 
+## Spec-driven development
+
+This repo uses [OpenSpec](https://github.com/Fission-AI/OpenSpec) for spec-driven
+development. PRs need an OpenSpec change under `openspec/changes/`, or an
+`sdd-exception: <reason>` line in the PR description.
+
 ## Contributing
 
 See [CONTRIBUTING.md](CONTRIBUTING.md).
