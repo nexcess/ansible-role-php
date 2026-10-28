@@ -61,3 +61,4 @@ There is no CI on this repo — the reviewer has only what you write here.
       and completely
 - [ ] Docs updated (`README.md`/`AGENTS.md`) if this changes how the project is built, run, or used
 - [ ] No secrets, tokens, or real customer/financial data included
+- [ ] Includes an OpenSpec change under openspec/changes/, or the description has an sdd-exception: <reason> line near the top
